@@ -85,11 +85,10 @@ export default function AdminDashboard() {
               size={22}
               color={isDark ? '#fff' : '#000'}
             />
-            <Ionicons
-              name="person-circle-outline"
-              size={26}
-              color={isDark ? '#fff' : '#000'}
-            />
+            <Pressable onPress={() => router.push('/profile')}>
+              <Ionicons name="person-circle-outline" size={26} color="#fff" />
+            </Pressable>
+
           </View>
         </View>
 

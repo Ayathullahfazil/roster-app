@@ -1,135 +1,69 @@
-import { supabase } from '@/src/lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import {
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    useColorScheme,
-    View,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
 } from 'react-native';
 
-type Employee = {
-  id: number;
-  full_name: string;
-  role: string;
-  status: string;
-};
-
-export default function ManageEmployeesScreen() {
+export default function ManageEmployees() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadEmployees = async () => {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('id, full_name, role, status')
-        .order('created_at', { ascending: true });
-
-      if (!error && data) {
-        setEmployees(data);
-      }
-
-      setLoading(false);
-    };
-
-    loadEmployees();
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={[styles.center, isDark && styles.darkBg]}>
-        <Text style={isDark && styles.darkText}>Loading employees…</Text>
-      </View>
-    );
-  }
+  const isDark = useColorScheme() === 'dark';
 
   return (
-    <View style={[styles.container, isDark && styles.darkBg]}>
-      {/* Back Button */}
-      <Pressable onPress={() => router.back()} style={styles.backBtn}>
-        <Text style={[styles.backText, isDark && styles.darkText]}>
-          ← Back
-        </Text>
-      </Pressable>
+    <SafeAreaView
+      style={[
+        styles.safe,
+        { backgroundColor: isDark ? '#121212' : '#f6f6f6' },
+      ]}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Pressable style={styles.back} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={20} color="#3b82f6" />
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
 
-      <Text style={[styles.title, isDark && styles.darkText]}>
-        Manage Employees
-      </Text>
+        <Text style={styles.title}>Manage Employees</Text>
 
-      <FlatList
-        data={employees}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={[styles.card, isDark && styles.darkCard]}>
-            <Text style={[styles.name, isDark && styles.darkText]}>
-              {item.full_name}
-            </Text>
-            <Text style={isDark && styles.darkMuted}>
-              Role: {item.role}
-            </Text>
-            <Text style={isDark && styles.darkMuted}>
-              Status: {item.status}
-            </Text>
+        {[
+          { name: 'Ayathullah Fazil Shaikh', role: 'admin' },
+          { name: 'Admin Test', role: 'admin' },
+          { name: 'Employee Test', role: 'employee' },
+        ].map((e) => (
+          <View key={e.name} style={styles.card}>
+            <Text style={styles.name}>{e.name}</Text>
+            <Text style={styles.meta}>Role: {e.role}</Text>
+            <Text style={styles.meta}>Status: active</Text>
           </View>
-        )}
-      />
-    </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: '#fff',
-  },
-  darkBg: {
-    backgroundColor: '#1c1c1e',
-  },
-  backBtn: {
-    marginBottom: 12,
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
-  },
+  safe: { flex: 1 },
+  container: { padding: 16 },
+
+  back: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  backText: { color: '#3b82f6', marginLeft: 4 },
+
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    marginBottom: 16,
-    color: '#000',
-  },
-  darkText: {
     color: '#fff',
-  },
-  darkMuted: {
-    color: '#aaa',
+    marginBottom: 16,
   },
   card: {
+    backgroundColor: '#1f1f1f',
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#f5f5f5',
     marginBottom: 12,
   },
-  darkCard: {
-    backgroundColor: '#2c2c2e',
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  name: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  meta: { color: '#aaa', marginTop: 4 },
 });
