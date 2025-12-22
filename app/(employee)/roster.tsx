@@ -1,11 +1,9 @@
-import { signOut } from '@/src/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-  Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,342 +11,440 @@ import {
   View,
 } from 'react-native';
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+type Tab = 'daily' | 'weekly' | 'monthly';
 
-  const [editMode, setEditMode] = useState(false);
-  const jiggleAnim = useRef(new Animated.Value(0)).current;
+export default function EmployeeRosterScreen() {
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
 
-  const [showShifts, setShowShifts] = useState(false);
-  const [showAlerts, setShowAlerts] = useState(false);
-  const [showIncidents, setShowIncidents] = useState(false);
+  const colors = {
+    bgPrimary: isDark ? '#0b1220' : '#f5f7fb',
+    bgCard: isDark ? '#1c2636' : '#ffffff',
+    bgElevated: isDark ? '#243044' : '#eef2f7',
 
-  /* ---------------- Jiggle Animation ---------------- */
-  useEffect(() => {
-    if (editMode) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(jiggleAnim, {
-            toValue: 1,
-            duration: 120,
-            useNativeDriver: true,
-          }),
-          Animated.timing(jiggleAnim, {
-            toValue: -1,
-            duration: 120,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
+    textPrimary: isDark ? '#ffffff' : '#111827',
+    textSecondary: isDark ? '#cbd5e1' : '#4b5563',
+    textMuted: isDark ? '#94a3b8' : '#9ca3af',
+    textInverse: '#ffffff',
+
+    primary: '#2563eb',
+    calendarDot: '#22c55e',
+  };
+
+  /* ================== NEW (for sticky sync) ================== */
+  const scrollRef = useRef<ScrollView>(null);
+  const dailyY = useRef(0);
+  const weeklyY = useRef(0);
+  const monthlyY = useRef(0);
+  /* =========================================================== */
+
+  const [activeTab, setActiveTab] = useState<Tab>('daily');
+
+  /* ================== NEW (scroll → tab sync) ================== */
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+
+    if (y >= monthlyY.current - 120) {
+      setActiveTab('monthly');
+    } else if (y >= weeklyY.current - 120) {
+      setActiveTab('weekly');
     } else {
-      jiggleAnim.stopAnimation();
-      jiggleAnim.setValue(0);
+      setActiveTab('daily');
     }
-  }, [editMode]);
-
-  const jiggleStyle = {
-    transform: [
-      {
-        rotate: jiggleAnim.interpolate({
-          inputRange: [-1, 1],
-          outputRange: ['-1.5deg', '1.5deg'],
-        }),
-      },
-      { scale: editMode ? 0.98 : 1 },
-    ],
   };
-
-  const handleLogout = async () => {
-    await signOut();
-    router.replace('/(auth)/login');
-  };
+  /* ============================================================ */
 
   return (
-    <SafeAreaView
-      style={[
-        styles.safe,
-        { backgroundColor: isDark ? '#121212' : '#f6f6f6' },
-      ]}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: isDark ? '#fff' : '#111' }]}>
-            Dashboard
-          </Text>
-          <View style={styles.headerIcons}>
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={isDark ? '#fff' : '#111'}
-            />
-            <Ionicons
-              name="person-circle-outline"
-              size={26}
-              color={isDark ? '#fff' : '#111'}
-            />
-          </View>
+    <View style={[styles.safe, { backgroundColor: colors.bgPrimary }]}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Ionicons name="person-circle-outline" size={26} color={colors.textPrimary} />
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Roster
+        </Text>
+        <View style={styles.headerRight}>
+          <Ionicons name="settings-outline" size={22} color={colors.textPrimary} />
+          <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
         </View>
+      </View>
 
-        {/* Stats */}
-        <View style={styles.grid}>
-          {[
-            { label: 'Active Shifts', value: 12, icon: 'shield-checkmark' },
-            { label: 'Pending Requests', value: 5, icon: 'time' },
-            { label: 'Active Incidents', value: 3, icon: 'alert' },
-            { label: 'Offline Officers', value: 2, icon: 'help' },
-          ].map((item) => (
-            <View key={item.label} style={styles.statCard}>
-              <Ionicons name={item.icon as any} size={20} color="#3b82f6" />
-              <Text style={styles.statValue}>{item.value}</Text>
-              <Text style={styles.statLabel}>{item.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Sections */}
-        <Section
-          title="Today's Shifts"
-          open={showShifts}
-          onToggle={() => setShowShifts(!showShifts)}
-          isDark={isDark}
-        >
-          <DummyRow title="John Smith" subtitle="08:00–16:00 @ Main Site" tag="Active" />
-          <DummyRow title="Jane Doe" subtitle="10:00–18:00 @ West Gate" tag="Scheduled" />
-        </Section>
-
-        <Section
-          title="Alerts & Issues"
-          open={showAlerts}
-          onToggle={() => setShowAlerts(!showAlerts)}
-          isDark={isDark}
-        >
-          <DummyRow title="Missed Welfare Checks" tag="2" />
-          <DummyRow title="Patrol Log Issues" tag="4" />
-        </Section>
-
-        <Section
-          title="Recent Incidents"
-          open={showIncidents}
-          onToggle={() => setShowIncidents(!showIncidents)}
-          isDark={isDark}
-        >
-          <DummyRow title="Unauthorized Access" subtitle="Main Gate · 14:32" tag="High" />
-          <DummyRow title="Suspicious Activity" subtitle="Parking Lot B" tag="Medium" />
-        </Section>
-
-        {/* Quick Actions Header */}
-        <View style={styles.quickHeader}>
-          <Text
+      {/* TABS */}
+      <View style={styles.tabs}>
+        {(['daily', 'weekly', 'monthly'] as Tab[]).map((t) => (
+          <Pressable
+            key={t}
+            onPress={() => {
+              setActiveTab(t);
+              scrollRef.current?.scrollTo({
+                y:
+                  t === 'daily'
+                    ? dailyY.current
+                    : t === 'weekly'
+                    ? weeklyY.current
+                    : monthlyY.current,
+                animated: true,
+              });
+            }}
             style={[
-              styles.sectionTitle,
-              { color: isDark ? '#fff' : '#111' },
+              styles.tab,
+              {
+                backgroundColor:
+                  activeTab === t ? colors.primary : colors.bgElevated,
+              },
             ]}
           >
-            Quick Actions
-          </Text>
-          <Pressable onPress={() => setEditMode(!editMode)}>
-            <Ionicons
-              name={editMode ? 'checkmark' : 'pencil'}
-              size={20}
-              color="#3b82f6"
-            />
+            <Text
+              style={{
+                color:
+                  activeTab === t ? colors.textInverse : colors.textSecondary,
+                fontWeight: '600',
+              }}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </Text>
           </Pressable>
+        ))}
+      </View>
+
+      <ScrollView
+        ref={scrollRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* ================= DAILY ================= */}
+        <View onLayout={(e) => (dailyY.current = e.nativeEvent.layout.y)}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="chevron-back" size={22} color={colors.textMuted} />
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              Thursday, 18 July
+            </Text>
+            <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+          </View>
+
+          <Card colors={colors}>
+            <Text style={[styles.time, { color: colors.textPrimary }]}>
+              09:00 – 17:00
+            </Text>
+            <Text style={{ color: colors.textSecondary }}>
+              Security Officer
+            </Text>
+
+            <View
+              style={[
+                styles.imagePlaceholder,
+                { backgroundColor: colors.bgElevated },
+              ]}
+            >
+              <Ionicons name="navigate-outline" size={28} color={colors.textMuted} />
+            </View>
+
+            <View style={styles.detailRow}>
+              <Ionicons name="person-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                Security Officer
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Ionicons name="document-text-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                Regular patrol duties. West entrance code #5566.
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Ionicons name="call-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                Ops Contact: 0412 345 678
+              </Text>
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.bgElevated }]} />
+
+            <View style={styles.detailRowBetween}>
+              <Text style={{ color: colors.textSecondary }}>
+                Welfare Check Required
+              </Text>
+              <Text style={{ color: '#22c55e', fontWeight: '700' }}>ON</Text>
+            </View>
+
+            <View style={styles.detailRowBetween}>
+              <Text style={{ color: colors.textSecondary }}>
+                Patrol Interval
+              </Text>
+              <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                60 mins
+              </Text>
+            </View>
+
+            <View style={styles.detailRowBetween}>
+              <Text style={{ color: colors.textSecondary }}>
+                Location Mode Policy
+              </Text>
+              <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                On-Site Geofence
+              </Text>
+            </View>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                style={[
+                  styles.secondaryBtn,
+                  { backgroundColor: colors.bgElevated },
+                ]}
+              >
+                <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                  Time-Off / Transfer
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.primaryBtn,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Text style={styles.primaryBtnText}>Start Shift</Text>
+              </Pressable>
+            </View>
+          </Card>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.actionsGrid}>
+        {/* ================= WEEKLY ================= */}
+        <View onLayout={(e) => (weeklyY.current = e.nativeEvent.layout.y)}>
+          <SectionHeader title="Weekly · Jul 15 – Jul 21" arrows colors={colors} />
+
+          <View
+            style={[
+              styles.weeklySummary,
+              { backgroundColor: colors.primary },
+            ]}
+          >
+            <SummaryItem label="Hours" value="38" colors={colors} />
+            <SummaryItem label="Shifts" value="6" colors={colors} />
+            <SummaryItem label="Pending" value="1" colors={colors} />
+          </View>
+
           {[
-            { label: 'Create Shift', icon: 'add-circle' },
-            { label: 'Create Roster', icon: 'calendar' },
-            { label: 'Create Site', icon: 'business' },
-            { label: 'Invite User', icon: 'person-add' },
-            {
-              label: 'Manage Employees',
-              icon: 'people',
-              route: '/manage-employees',
-            },
-            { label: 'Live Map', icon: 'map' },
-          ].map((a) => (
-            <Animated.View
-              key={a.label}
-              style={editMode ? jiggleStyle : undefined}
-            >
-              <Pressable
-                style={styles.actionCard}
-                onPress={() =>
-                  !editMode && a.route && router.push(a.route as any)
-                }
-              >
-                <Ionicons name={a.icon as any} size={26} color="#3b82f6" />
-                <Text style={styles.actionText}>{a.label}</Text>
-              </Pressable>
-            </Animated.View>
+            'Mon · CBD Office Tower · Security Officer',
+            'Tue · City Retail Centre · Patrol Guard',
+            'Wed · City Retail Centre · Patrol Guard',
+            'Thu · Eastside Depot · Security Guard',
+            'Fri · West Mall · Supervisor',
+            'Fri · West Mall · Night Patrol',
+          ].map((item) => (
+            <Card key={item} colors={colors}>
+              <Text style={{ color: colors.textPrimary }}>{item}</Text>
+            </Card>
           ))}
         </View>
 
-        {/* Logout */}
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#e11d48" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
+        {/* ================= MONTHLY ================= */}
+        <View onLayout={(e) => (monthlyY.current = e.nativeEvent.layout.y)}>
+          <SectionHeader title="July 2024" arrows colors={colors} />
+
+          <View style={styles.calendar}>
+            {Array.from({ length: 31 }).map((_, i) => {
+              const day = i + 1;
+              const shifts =
+                day === 8 || day === 29 ? 2 :
+                day === 3 || day === 18 ? 1 : 0;
+
+              return (
+                <View key={day} style={styles.calendarCell}>
+                  <Text
+                    style={{
+                      color: shifts ? colors.textPrimary : colors.textMuted,
+                      fontSize: 16,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {day}
+                  </Text>
+
+                  {shifts > 0 && (
+                    <View
+                      style={[
+                        styles.shiftDot,
+                        { backgroundColor: colors.calendarDot, marginTop: 6 },
+                      ]}
+                    >
+                      {shifts > 1 && (
+                        <Text style={{ color: colors.textInverse, fontSize: 11 }}>
+                          {shifts}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
       </ScrollView>
-    </SafeAreaView>
-  );
-}
-
-/* ---------------- Components ---------------- */
-
-function Section({
-  title,
-  open,
-  onToggle,
-  children,
-  isDark,
-}: {
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  isDark: boolean;
-}) {
-  return (
-    <View style={{ marginBottom: 16 }}>
-      <Pressable style={styles.sectionHeader} onPress={onToggle}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: isDark ? '#fff' : '#111' },
-          ]}
-        >
-          {title}
-        </Text>
-        <Ionicons
-          name={open ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color="#aaa"
-        />
-      </Pressable>
-      {open && <View>{children}</View>}
     </View>
   );
 }
 
-function DummyRow({
-  title,
-  subtitle,
-  tag,
-}: {
-  title: string;
-  subtitle?: string;
-  tag?: string;
-}) {
+/* ---------- COMPONENTS ---------- */
+
+function SectionHeader({ title, arrows, colors }: any) {
   return (
-    <View style={styles.row}>
-      <View>
-        <Text style={styles.rowTitle}>{title}</Text>
-        {subtitle && <Text style={styles.rowSub}>{subtitle}</Text>}
-      </View>
-      {tag && <Text style={styles.tag}>{tag}</Text>}
+    <View style={styles.sectionHeader}>
+      {arrows && (
+        <Ionicons name="chevron-back" size={22} color={colors.textMuted} />
+      )}
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        {title}
+      </Text>
+      {arrows && (
+        <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
+      )}
     </View>
   );
 }
 
-/* ---------------- Styles ---------------- */
+function Card({ children, colors }: any) {
+  return (
+    <View style={[styles.card, { backgroundColor: colors.bgCard }]}>
+      {children}
+    </View>
+  );
+}
+
+function SummaryItem({ label, value, colors }: any) {
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ color: colors.textInverse, fontSize: 22, fontWeight: '700' }}>
+        {value}
+      </Text>
+      <Text style={{ color: colors.textInverse }}>{label}</Text>
+    </View>
+  );
+}
+
+/* ---------- STYLES ---------- */
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  container: { padding: 16, paddingBottom: 40 },
 
   header: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  title: { fontSize: 28, fontWeight: '700' },
-  headerIcons: { flexDirection: 'row', gap: 14 },
-
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 24,
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: '#1f1f1f',
-    borderRadius: 16,
-    padding: 16,
-  },
-  statValue: { fontSize: 22, fontWeight: '700', color: '#fff' },
-  statLabel: { color: '#aaa', marginTop: 4 },
-
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-
-  row: {
-    backgroundColor: '#1f1f1f',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  rowTitle: { color: '#fff', fontWeight: '600' },
-  rowSub: { color: '#aaa', marginTop: 2 },
-  tag: {
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    fontSize: 12,
-  },
-
-  quickHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700' },
+  headerRight: { flexDirection: 'row', gap: 12 },
+
+  tabs: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 10,
     marginBottom: 12,
   },
-
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  actionCard: {
-    width: '48%',
-    backgroundColor: '#1f1f1f',
-    borderRadius: 16,
-    padding: 18,
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
     alignItems: 'center',
   },
-  actionText: {
-    marginTop: 8,
-    color: '#fff',
-    fontWeight: '600',
+
+  sectionHeader: {
+    marginTop: 24,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: { fontSize: 18, fontWeight: '700' },
+
+  card: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
   },
 
-  logoutBtn: {
-    marginTop: 20,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#fee2e2',
-    flexDirection: 'row',
+  time: { fontSize: 18, fontWeight: '700' },
+
+  imagePlaceholder: {
+    height: 140,
+    borderRadius: 12,
+    marginVertical: 12,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
-  logoutText: {
-    color: '#e11d48',
-    fontWeight: '700',
+
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  detailText: {
+    flex: 1,
+  },
+
+  divider: {
+    height: 1,
+    marginVertical: 12,
+  },
+
+  detailRowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  secondaryBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryBtnText: { color: '#ffffff', fontWeight: '700' },
+
+  weeklySummary: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  calendar: {
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  calendarCell: {
+    width: '13%',
+    height: 56,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  shiftDot: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
