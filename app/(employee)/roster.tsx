@@ -1,5 +1,10 @@
+import { signOut } from '@/src/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -31,6 +36,14 @@ export default function EmployeeRosterScreen() {
     calendarDot: '#22c55e',
   };
 
+  const router = useRouter();
+
+  const handleLogout = async () => {
+   await signOut();
+    router.replace('/(auth)/login');
+  };
+
+
   /* ================== NEW (for sticky sync) ================== */
   const scrollRef = useRef<ScrollView>(null);
   const dailyY = useRef(0);
@@ -54,8 +67,12 @@ export default function EmployeeRosterScreen() {
   };
   /* ============================================================ */
 
-  return (
-    <View style={[styles.safe, { backgroundColor: colors.bgPrimary }]}>
+      return (
+        <SafeAreaView
+          style={[styles.safe, { backgroundColor: colors.bgPrimary }]}
+         edges={['top']}
+       >
+
       {/* HEADER */}
       <View style={styles.header}>
         <Ionicons name="person-circle-outline" size={26} color={colors.textPrimary} />
@@ -106,12 +123,14 @@ export default function EmployeeRosterScreen() {
         ))}
       </View>
 
-      <ScrollView
-        ref={scrollRef}
-        onScroll={handleScroll}
+            <ScrollView
+         ref={scrollRef}
+         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
       >
+
+
         {/* ================= DAILY ================= */}
         <View onLayout={(e) => (dailyY.current = e.nativeEvent.layout.y)}>
           <View style={styles.sectionHeader}>
@@ -213,6 +232,7 @@ export default function EmployeeRosterScreen() {
         {/* ================= WEEKLY ================= */}
         <View onLayout={(e) => (weeklyY.current = e.nativeEvent.layout.y)}>
           <SectionHeader title="Weekly · Jul 15 – Jul 21" arrows colors={colors} />
+            
 
           <View
             style={[
@@ -234,7 +254,14 @@ export default function EmployeeRosterScreen() {
             'Fri · West Mall · Night Patrol',
           ].map((item) => (
             <Card key={item} colors={colors}>
-              <Text style={{ color: colors.textPrimary }}>{item}</Text>
+              <Text style={{ color: colors.textPrimary }}>
+               {item.replace(
+                 /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/,
+               (d) => d.toUpperCase()
+            )}
+          </Text>
+
+
             </Card>
           ))}
         </View>
@@ -242,6 +269,18 @@ export default function EmployeeRosterScreen() {
         {/* ================= MONTHLY ================= */}
         <View onLayout={(e) => (monthlyY.current = e.nativeEvent.layout.y)}>
           <SectionHeader title="July 2024" arrows colors={colors} />
+
+        {/* ✅ NEW: weekday row */}
+                <View style={styles.weekdayRow}>
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => (
+                       <Text
+                         key={d}
+                         style={[styles.weekdayText, { color: colors.textMuted }]}
+                      >
+                         {d}
+                       </Text>
+                       ))}
+                    </View>
 
           <View style={styles.calendar}>
             {Array.from({ length: 31 }).map((_, i) => {
@@ -281,8 +320,17 @@ export default function EmployeeRosterScreen() {
             })}
           </View>
         </View>
+          {/* ---------------- Logout ---------------- */}
+         <Pressable style={styles.logoutBtn} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={20} color="#e11d48" />
+        <Text style={styles.logoutText}>Logout</Text>
+          </Pressable>
+
+
+
       </ScrollView>
-    </View>
+    </SafeAreaView>
+
   );
 }
 
@@ -321,6 +369,8 @@ function SummaryItem({ label, value, colors }: any) {
       <Text style={{ color: colors.textInverse }}>{label}</Text>
     </View>
   );
+
+
 }
 
 /* ---------- STYLES ---------- */
@@ -353,7 +403,7 @@ const styles = StyleSheet.create({
 
   sectionHeader: {
     marginTop: 24,
-    marginBottom: 12,
+    marginBottom: 45,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -428,18 +478,19 @@ const styles = StyleSheet.create({
   },
 
   calendar: {
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
+  paddingHorizontal: 16,
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+},
+
   calendarCell: {
-    width: '13%',
-    height: 56,
-    marginBottom: 12,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
+  width: '14.2857%', // ⬅️ exact 7-column grid (100 / 7)
+  height: 56,
+  marginBottom: 12,
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+},
+
   shiftDot: {
     minWidth: 18,
     height: 18,
@@ -447,4 +498,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+weekdayRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  paddingHorizontal: 16,
+  marginBottom: 42, // ✅ THIS creates visible space before dates
+},
+
+weekdayText: {
+  width: '13%',        // ✅ forces perfect alignment with calendar columns
+  textAlign: 'center',
+  fontSize: 18,        // ✅ bigger than date numbers
+  fontWeight: '700',   // ✅ bold
+},
+
+
+dayLabel: {
+  width: '13%',           // matches calendarCell width
+  textAlign: 'center',
+  fontSize: 1,           // 👈 slightly bigger than dates
+  fontWeight: '700',      // 👈 bold
+},
+
+
+logoutBtn: {
+  marginTop: 20,
+  marginHorizontal: 16,
+  paddingVertical: 12,
+  borderRadius: 14,
+  backgroundColor: '#fee2e2',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  gap: 8,
+},
+
+logoutText: {
+  color: '#e11d48',
+  fontWeight: '700',
+},
+
+
 });
