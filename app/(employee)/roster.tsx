@@ -2,18 +2,19 @@ import { signOut } from '@/src/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
+import { Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   useColorScheme,
-  View,
+  View
 } from 'react-native';
 
 type Tab = 'daily' | 'weekly' | 'monthly';
@@ -22,27 +23,35 @@ export default function EmployeeRosterScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  const colors = {
-    bgPrimary: isDark ? '#0b1220' : '#f5f7fb',
-    bgCard: isDark ? '#1c2636' : '#ffffff',
-    bgElevated: isDark ? '#243044' : '#eef2f7',
-
-    textPrimary: isDark ? '#ffffff' : '#111827',
-    textSecondary: isDark ? '#cbd5e1' : '#4b5563',
-    textMuted: isDark ? '#94a3b8' : '#9ca3af',
-    textInverse: '#ffffff',
-
-    primary: '#2563eb',
-    calendarDot: '#22c55e',
-  };
-
   const router = useRouter();
+
+  const colors = {
+  /* Backgrounds */
+  bg: isDark ? '#121212' : '#f6f6f6',
+  card: isDark ? '#1f1f1f' : '#ffffff',
+  elevated: isDark ? '#262626' : '#eef2f7',
+
+  /* Borders */
+  border: isDark ? '#2a2a2a' : '#e5e7eb',
+
+  /* Text */
+  textPrimary: isDark ? '#ffffff' : '#111827',
+  textSecondary: isDark ? '#a1a1aa' : '#4b5563',
+  textMuted: isDark ? '#71717a' : '#9ca3af',
+  textInverse: isDark ? '#000000' : '#ffffff',
+
+  /* Brand / Status */
+  primary: '#2563eb',
+  success: '#22c55e',
+  calendarDot: '#22c55e',
+};
+
+
 
   const handleLogout = async () => {
    await signOut();
     router.replace('/(auth)/login');
   };
-
 
   /* ================== NEW (for sticky sync) ================== */
   const scrollRef = useRef<ScrollView>(null);
@@ -66,16 +75,23 @@ export default function EmployeeRosterScreen() {
     }
   };
   /* ============================================================ */
-
+  
       return (
         <SafeAreaView
-          style={[styles.safe, { backgroundColor: colors.bgPrimary }]}
+          style={[styles.safe, { backgroundColor: colors.bg }]}
          edges={['top']}
        >
-
-      {/* HEADER */}
+        
+        {/* HEADER */}
       <View style={styles.header}>
-        <Ionicons name="person-circle-outline" size={26} color={colors.textPrimary} />
+        <Pressable onPress={() => router.push('/profile')}>
+      <Ionicons
+       name="person-circle-outline"
+       size={26}
+       color={colors.textPrimary}
+        />
+      </Pressable>
+
         <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
           Roster
         </Text>
@@ -106,7 +122,7 @@ export default function EmployeeRosterScreen() {
               styles.tab,
               {
                 backgroundColor:
-                  activeTab === t ? colors.primary : colors.bgElevated,
+                  activeTab === t ? colors.primary : colors.elevated,
               },
             ]}
           >
@@ -152,7 +168,7 @@ export default function EmployeeRosterScreen() {
             <View
               style={[
                 styles.imagePlaceholder,
-                { backgroundColor: colors.bgElevated },
+                { backgroundColor: colors.elevated },
               ]}
             >
               <Ionicons name="navigate-outline" size={28} color={colors.textMuted} />
@@ -179,7 +195,7 @@ export default function EmployeeRosterScreen() {
               </Text>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.bgElevated }]} />
+            <View style={[styles.divider, { backgroundColor: colors.elevated }]} />
 
             <View style={styles.detailRowBetween}>
               <Text style={{ color: colors.textSecondary }}>
@@ -207,25 +223,46 @@ export default function EmployeeRosterScreen() {
             </View>
 
             <View style={styles.actionRow}>
-              <Pressable
-                style={[
-                  styles.secondaryBtn,
-                  { backgroundColor: colors.bgElevated },
-                ]}
-              >
-                <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
-                  Time-Off / Transfer
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.primaryBtn,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <Text style={styles.primaryBtnText}>Start Shift</Text>
-              </Pressable>
-            </View>
+  {/* Time-Off / Transfer */}
+  <Pressable
+    style={[
+      styles.secondaryBtn,
+      { backgroundColor: colors.elevated },
+    ]}
+  >
+    <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+      Time-Off / Transfer
+    </Text>
+  </Pressable>
+
+  {/* Start Shift */}
+  <Pressable
+    style={[
+      styles.primaryBtn,
+      { backgroundColor: colors.primary },
+    ]}
+  >
+    <Text style={{ color: colors.textInverse, fontWeight: '700' }}>
+      Start Shift
+    </Text>
+  </Pressable>
+
+  {/* Navigation icon */}
+  <Pressable
+    style={[
+      styles.iconBtn,
+      { backgroundColor: colors.primary },
+    ]}
+  >
+    <Ionicons
+      name="navigate-outline"
+      size={18}
+      color={colors.textInverse}
+    />
+  </Pressable>
+</View>
+
+
           </Card>
         </View>
 
@@ -272,9 +309,9 @@ export default function EmployeeRosterScreen() {
 
         {/* ✅ NEW: weekday row */}
                 <View style={styles.weekdayRow}>
-                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => (
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d,i) => (
                        <Text
-                         key={d}
+                         key={`${d}-${i}`}
                          style={[styles.weekdayText, { color: colors.textMuted }]}
                       >
                          {d}
@@ -451,7 +488,7 @@ const styles = StyleSheet.create({
 
   actionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     marginTop: 16,
   },
   secondaryBtn: {
@@ -460,13 +497,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  
   primaryBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryBtnText: { color: '#ffffff', fontWeight: '700' },
+  flex: 1,
+  height: 48,
+  borderTopRightRadius: 10,
+  borderBottomRightRadius: 10,
+  borderTopLeftRadius: 14,
+  borderBottomLeftRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
 
   weeklySummary: {
     marginHorizontal: 16,
@@ -537,6 +579,44 @@ logoutText: {
   color: '#e11d48',
   fontWeight: '700',
 },
+
+startShiftGroup: {
+  flex: 1,
+  flexDirection: 'row',
+  borderRadius: 14,
+  overflow: 'hidden',
+},
+
+startShiftMain: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 14,
+},
+
+startShiftText: {
+  fontWeight: '700',
+  fontSize: 16,
+},
+
+startShiftIcon: {
+  width: 52,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderLeftWidth: 1,
+},
+
+iconBtn: {
+  width: 75,
+  height: 48,
+  borderTopLeftRadius: 12,
+  borderBottomLeftRadius: 10,
+  borderTopRightRadius: 14,
+  borderBottomRightRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
 
 
 });
