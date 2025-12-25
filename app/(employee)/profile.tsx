@@ -1,348 +1,287 @@
-import { signOut } from '@/src/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
     Pressable,
+    SafeAreaView,
     ScrollView,
     StyleSheet,
-    Text, useColorScheme, View
+    Text,
+    View,
+    useColorScheme,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function EmployeeProfileScreen() {
+export default function AdminProfile() {
   const router = useRouter();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  /* ---------- Theme Tokens ---------- */
   const colors = {
     bg: isDark ? '#121212' : '#f6f6f6',
     card: isDark ? '#1f1f1f' : '#ffffff',
-    border: isDark ? '#2a2a2a' : '#e5e7eb',
+    elevated: isDark ? '#2a2a2a' : '#eef2f7',
 
     textPrimary: isDark ? '#ffffff' : '#111827',
     textSecondary: isDark ? '#a1a1aa' : '#6b7280',
-    danger: '#e11d48',
-    success: '#22c55e',
+    textMuted: isDark ? '#888888' : '#9ca3af',
+
+    primary: '#3b82f6',
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    router.replace('/(auth)/login');
+  const handleBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/dashboard');
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.container}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Pressable
+            onPress={handleBack}
+            style={[styles.backBtn, { backgroundColor: colors.elevated }]}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
+          </Pressable>
 
-
-        {/* ================= Profile Card (FIXED) ================= */}
-    <View style={styles.profileCard}>
-  <View style={styles.avatar} />
-
-     <Text style={[styles.name, { color: colors.textPrimary }]}>
-    Jane Doe
-    </Text>
-
-  <Text style={styles.subText}>Security Officer</Text>
-
-  <View style={styles.roleRow}>
-    <View style={styles.rolePillPrimary}>
-      <Text style={styles.roleTextPrimary}>On Shift</Text>
-    </View>
-  </View>
-</View>
-
-
-
-        {/* ================= Documents ================= */}
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          Documents & Certifications
-        </Text>
-
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
-          {['Security License', 'First Aid Certificate', 'ID Verification'].map(
-            (item, idx) => (
-              <Row
-                key={item}
-                label={item}
-                isLast={idx === 2}
-                colors={colors}
-              />
-            )
-          )}
-        </View>
-
-        {/* ================= Profile Details ================= */}
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          Profile Details
-        </Text>
-
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
-          <Field label="Full Name" value="Jane Doe" colors={colors} />
-          <Field label="Role" value="Security Officer" colors={colors} />
-          <Field label="Phone" value="0412 345 678" colors={colors} />
-          <Field
-            label="Email"
-            value="jane.doe@email.com"
-            colors={colors}
-            disabled
-          />
-        </View>
-
-        {/* ================= Quick Actions ================= */}
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          Quick Account Actions
-        </Text>
-
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
-          {[
-            'App Settings',
-            'Change / Reset Password',
-            'Notification Settings',
-            'Support / Help Center',
-            'Report an Issue',
-          ].map((item, idx) => (
-            <Row
-              key={item}
-              label={item}
-              danger={item === 'Report an Issue'}
-              isLast={idx === 4}
-              colors={colors}
-            />
-          ))}
-        </View>
-
-        {/* ================= About ================= */}
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-          About
-        </Text>
-
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
-          <InfoRow label="App Version" value="2.3.1 (Build 45)" colors={colors} />
-          <InfoRow label="Last Sync Status" value="Today, 2:15 PM" colors={colors} />
-          <InfoRow label="Device Info" value="Nokia 3310" colors={colors} />
-        </View>
-
-        {/* ================= Logout ================= */}
-        <Pressable
-          style={[styles.logoutBtn, { backgroundColor: '#fee2e2' }]}
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-          <Text style={[styles.logoutText, { color: colors.danger }]}>
-            Log Out
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+            User Profile
           </Text>
-        </Pressable>
 
+          <Pressable>
+            <Text style={[styles.editText, { color: colors.primary }]}>
+              Edit
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* PROFILE CARD */}
+        <View
+          style={[styles.profileCard, { backgroundColor: colors.card }]}
+        >
+          <View style={styles.avatar} />
+
+          <Text style={[styles.name, { color: colors.textPrimary }]}>
+            Sarah Jenkins
+          </Text>
+          <Text style={[styles.email, { color: colors.textSecondary }]}>
+            sarah.jenkins@company.com
+          </Text>
+
+          <View style={styles.roleRow}>
+            <View
+              style={[
+                styles.rolePillPrimary,
+                { backgroundColor: colors.primary },
+              ]}
+            >
+              <Text style={styles.roleTextPrimary}>Admin</Text>
+            </View>
+            <View
+              style={[styles.rolePill, { backgroundColor: colors.elevated }]}
+            >
+              <Text style={[styles.roleText, { color: colors.textPrimary }]}>
+                Manager
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* BASIC INFO */}
+        <Section title="Basic Information" colors={colors}>
+          <Field label="Full Name" value="Sarah Jenkins" colors={colors} />
+          <Field
+            label="Email Address"
+            value="sarah.jenkins@company.com"
+            locked
+            colors={colors}
+          />
+          <Field label="Phone Number" value="+1 (555) 123-4567" colors={colors} />
+
+          <View style={styles.row}>
+            <SmallField label="Employee ID" value="EMP-2023-001" colors={colors} />
+            <SmallField label="Joined Date" value="Oct 12, 2022" colors={colors} />
+          </View>
+        </Section>
+
+        {/* ROLES */}
+        <Section title="Roles & Access" colors={colors}>
+          <Field label="Primary Role" value="Admin" colors={colors} />
+
+          <View style={styles.roleRow}>
+            <View
+              style={[styles.rolePill, { backgroundColor: colors.elevated }]}
+            >
+              <Text style={[styles.roleText, { color: colors.textPrimary }]}>
+                Manager ✕
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.addRolePill,
+                { borderColor: colors.primary },
+              ]}
+            >
+              <Text style={[styles.addRoleText, { color: colors.primary }]}>
+                + Add Role
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.helperText, { color: colors.textMuted }]}>
+            Hierarchy: Admin → Manager → User
+          </Text>
+
+          <View style={styles.permissionRow}>
+            <Permission label="Roster Management" colors={colors} />
+            <Permission label="Approvals" colors={colors} />
+            <Permission label="System Config" muted colors={colors} />
+          </View>
+        </Section>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* ================= Components ================= */
+/* ---------- COMPONENTS ---------- */
 
-        function Row({
-        label,
-        isLast,
-        danger,
-        colors,
-                }: {
-        label: string;
-        isLast?: boolean;
-        danger?: boolean;
-        colors: any;
-        }) {
+function Section({ title, children, colors }: any) {
+  return (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function Field({ label, value, locked, colors }: any) {
+  return (
+    <View style={[styles.field, { backgroundColor: colors.card }]}>
+      <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
+      <View style={styles.fieldRow}>
+        <Text style={[styles.value, { color: colors.textPrimary }]}>
+          {value}
+        </Text>
+        {locked && (
+          <Ionicons name="lock-closed" size={14} color={colors.textMuted} />
+        )}
+      </View>
+    </View>
+  );
+}
+
+function SmallField({ label, value, colors }: any) {
+  return (
+    <View style={[styles.smallField, { backgroundColor: colors.card }]}>
+      <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.value, { color: colors.textPrimary }]}>{value}</Text>
+    </View>
+  );
+}
+
+function Permission({ label, muted, colors }: any) {
   return (
     <View
       style={[
-        styles.row,
-        !isLast && { borderBottomWidth: 1, borderBottomColor: colors.border },
+        styles.permission,
+        {
+          backgroundColor: muted ? colors.elevated : colors.primary,
+        },
       ]}
     >
-      <Text
-        style={{
-          color: danger ? colors.danger : colors.textPrimary,
-          fontWeight: '500',
-        }}
-      >
-        {label}
-      </Text>
-      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+      <Text style={styles.permissionText}>{label}</Text>
     </View>
   );
 }
 
-function Field({
-  label,
-  value,
-  disabled,
-  colors,
-}: {
-  label: string;
-  value: string;
-  disabled?: boolean;
-  colors: any;
-}) {
-  return (
-    <View style={styles.field}>
-      <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>
-        {label}
-      </Text>
-      <View
-  style={[
-    styles.fieldBox,
-    {
-      backgroundColor: colors.card,
-      borderColor: colors.border,
-      opacity: disabled ? 0.75 : 1,
-    },
-  ]}
->
-  <Text
-    style={{
-      color: disabled ? colors.textSecondary : colors.textPrimary,
-    }}
-  >
-    {value}
-  </Text>
-</View>
-
-    </View>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  colors,
-}: {
-  label: string;
-  value: string;
-  colors: any;
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={{ color: colors.textSecondary }}>{label}</Text>
-      <Text style={{ color: colors.textPrimary, fontWeight: '500' }}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-/* ================= Styles ================= */
+/* ---------- STYLES ---------- */
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { padding: 16, paddingBottom: 40 },
 
-  profileCard: {
-  
-  borderRadius: 18,
-  paddingVertical: 24,
-  paddingHorizontal: 16,
-  alignItems: 'center',   // ✅ KEY FIX
-  marginBottom: 24,
-},
-
-
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#3b82f6',
-    marginBottom: 16,   // ⬅ space below avatar
-  },
-
-  name: {
-  fontSize: 20,
-  fontWeight: '700',
-     // ✅ clearer on dark card
-  marginBottom: 10,
-},
-
-
-  statusRow: {
+  header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 6,},
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { fontSize: 13, fontWeight: '600' },
+    marginBottom: 16,
+  },
+  backBtn: {
+    padding: 6,
+    borderRadius: 8,
+  },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
+  editText: { fontWeight: '600' },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+  profileCard: {
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#999',
+    marginBottom: 12,
+  },
+  name: { fontSize: 20, fontWeight: '700' },
+  email: { marginTop: 4 },
+
+  roleRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+
+  rolePillPrimary: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  roleTextPrimary: { color: '#fff', fontWeight: '600' },
+
+  rolePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  roleText: {},
+
+  addRolePill: {
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  addRoleText: { fontWeight: '600' },
+
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 18, fontWeight: '700' },
+
+  field: {
+    borderRadius: 12,
+    padding: 14,
     marginBottom: 10,
   },
+  label: { marginBottom: 4 },
+  value: { fontWeight: '600' },
+  fieldRow: { flexDirection: 'row', justifyContent: 'space-between' },
 
-  card: {
-    borderRadius: 18,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-
-  row: {
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  field: { padding: 16 },
-  fieldLabel: { marginBottom: 6 },
-  fieldBox: {
-    borderWidth: 1,
+  row: { flexDirection: 'row', gap: 12 },
+  smallField: {
+    flex: 1,
     borderRadius: 12,
-    padding: 12,
+    padding: 14,
   },
 
-  infoRow: {
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  helperText: { marginTop: 6 },
+
+  permissionRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  permission: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-
-  logoutBtn: {
-    paddingVertical: 14,
-    borderRadius: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoutText: { fontWeight: '700' },
-
-
-email: {
-  fontSize: 14,
-  color: '#9ca3af',
-  marginBottom: 12,
-},
-
-roleRow: {
-  flexDirection: 'row',
-  gap: 10,
-},
-
-rolePillPrimary: {
-  backgroundColor: '#2563eb',
-  paddingHorizontal: 14,
-  paddingVertical: 6,
-  borderRadius: 999,
-},
-
-roleTextPrimary: {
-  color: '#ffffff',
-  fontWeight: '600',
-  fontSize: 13,
-},
-
-subText: {
-  fontSize: 14,
-  color: '#9ca3af',
-  marginBottom: 12,
-},
-
+  permissionText: { color: '#fff', fontSize: 12 },
 });

@@ -15,10 +15,25 @@ import {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
 
-  /* ---------------- State ---------------- */
+  /* ---------- THEME ---------- */
+  const colors = {
+    bg: isDark ? '#121212' : '#f6f6f6',
+    card: isDark ? '#1f1f1f' : '#ffffff',
+    elevated: isDark ? '#2a2a2a' : '#eef2f7',
+    border: isDark ? '#2a2a2a' : '#e5e7eb',
+
+    textPrimary: isDark ? '#ffffff' : '#111827',
+    textSecondary: isDark ? '#a1a1aa' : '#6b7280',
+    textMuted: isDark ? '#888888' : '#9ca3af',
+
+    primary: '#3b82f6',
+    danger: '#e11d48',
+  };
+
+  /* ---------- STATE ---------- */
   const [editMode, setEditMode] = useState(false);
   const jiggleAnim = useRef(new Animated.Value(0)).current;
 
@@ -26,7 +41,7 @@ export default function AdminDashboard() {
   const [showAlerts, setShowAlerts] = useState(true);
   const [showIncidents, setShowIncidents] = useState(true);
 
-  /* ---------------- Jiggle Animation ---------------- */
+  /* ---------- ANIMATION ---------- */
   useEffect(() => {
     if (editMode) {
       Animated.loop(
@@ -67,32 +82,31 @@ export default function AdminDashboard() {
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.safe,
-        { backgroundColor: isDark ? '#121212' : '#f6f6f6' },
-      ]}
-    >
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* ---------------- Header ---------------- */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: isDark ? '#fff' : '#000' }]}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
             Dashboard
           </Text>
+
           <View style={styles.headerIcons}>
             <Ionicons
               name="notifications-outline"
               size={22}
-              color={isDark ? '#fff' : '#000'}
+              color={colors.textPrimary}
             />
             <Pressable onPress={() => router.push('/profile')}>
-              <Ionicons name="person-circle-outline" size={26} color="#fff" />
+              <Ionicons
+                name="person-circle-outline"
+                size={26}
+                color={colors.textPrimary}
+              />
             </Pressable>
-
           </View>
         </View>
 
-        {/* ---------------- Stats ---------------- */}
+        {/* STATS */}
         <View style={styles.grid}>
           {[
             { label: 'Active Shifts', value: 12, icon: 'shield-checkmark' },
@@ -100,30 +114,43 @@ export default function AdminDashboard() {
             { label: 'Active Incidents', value: 3, icon: 'alert' },
             { label: 'Offline Officers', value: 2, icon: 'help' },
           ].map((item) => (
-            <View key={item.label} style={styles.statCard}>
-              <Ionicons name={item.icon as any} size={20} color="#3b82f6" />
-              <Text style={styles.statValue}>{item.value}</Text>
-              <Text style={styles.statLabel}>{item.label}</Text>
+            <View
+              key={item.label}
+              style={[styles.statCard, { backgroundColor: colors.card }]}
+            >
+              <Ionicons
+                name={item.icon as any}
+                size={20}
+                color={colors.primary}
+              />
+              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+                {item.value}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+                {item.label}
+              </Text>
             </View>
           ))}
         </View>
 
-        {/* ---------------- Sections ---------------- */}
+        {/* SECTIONS */}
         <Section
           title="Today's Shifts"
           open={showShifts}
           onToggle={() => setShowShifts(!showShifts)}
-          isDark={isDark}
+          colors={colors}
         >
           <DummyRow
             title="John Smith"
             subtitle="08:00–16:00 @ Main Site"
             tag="Active"
+            colors={colors}
           />
           <DummyRow
             title="Jane Doe"
             subtitle="10:00–18:00 @ West Gate"
             tag="Scheduled"
+            colors={colors}
           />
         </Section>
 
@@ -131,47 +158,45 @@ export default function AdminDashboard() {
           title="Alerts & Issues"
           open={showAlerts}
           onToggle={() => setShowAlerts(!showAlerts)}
-          isDark={isDark}
+          colors={colors}
         >
-          <DummyRow title="Missed Welfare Checks" tag="2" />
-          <DummyRow title="Patrol Log Issues" tag="4" />
+          <DummyRow title="Missed Welfare Checks" tag="2" colors={colors} />
+          <DummyRow title="Patrol Log Issues" tag="4" colors={colors} />
         </Section>
 
         <Section
           title="Recent Incidents"
           open={showIncidents}
           onToggle={() => setShowIncidents(!showIncidents)}
-          isDark={isDark}
+          colors={colors}
         >
           <DummyRow
             title="Unauthorized Access"
             subtitle="Main Gate · 14:32"
             tag="High"
+            colors={colors}
           />
           <DummyRow
             title="Suspicious Activity"
             subtitle="Parking Lot B"
             tag="Medium"
+            colors={colors}
           />
         </Section>
 
-        {/* ---------------- Quick Actions ---------------- */}
+        {/* QUICK ACTIONS */}
         <View style={styles.quickHeader}>
           <Text
-            style={[
-              styles.sectionTitle,
-              { color: isDark ? '#fff' : '#000' },
-            ]}
+            style={[styles.sectionTitle, { color: colors.textPrimary }]}
           >
             Quick Actions
           </Text>
 
-          {/* ✅ Pencil icon FIXED */}
           <Pressable onPress={() => setEditMode(!editMode)}>
             <Ionicons
               name={editMode ? 'checkmark' : 'pencil'}
               size={20}
-              color="#3b82f6"
+              color={colors.primary}
             />
           </Pressable>
         </View>
@@ -182,11 +207,7 @@ export default function AdminDashboard() {
             { label: 'Create Roster', icon: 'calendar' },
             { label: 'Create Site', icon: 'business' },
             { label: 'Invite User', icon: 'person-add' },
-            {
-              label: 'Manage Employees',
-              icon: 'people',
-              route: '/manage-employees',
-            },
+            { label: 'Manage Employees', icon: 'people', route: '/manage-employees' },
             { label: 'Live Map', icon: 'map' },
           ].map((a) => (
             <Animated.View
@@ -194,58 +215,62 @@ export default function AdminDashboard() {
               style={[styles.animatedCard, editMode && jiggleStyle]}
             >
               <Pressable
-                style={styles.actionCard}
+                style={[styles.actionCard, { backgroundColor: colors.card }]}
                 onPress={() =>
                   !editMode && a.route && router.push(a.route as any)
                 }
               >
-                <Ionicons name={a.icon as any} size={26} color="#3b82f6" />
-                <Text style={styles.actionText}>{a.label}</Text>
+                <Ionicons
+                  name={a.icon as any}
+                  size={26}
+                  color={colors.primary}
+                />
+                <Text
+                  style={[styles.actionText, { color: colors.textPrimary }]}
+                >
+                  {a.label}
+                </Text>
               </Pressable>
             </Animated.View>
           ))}
         </View>
 
-        {/* ---------------- Logout ---------------- */}
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#e11d48" />
-          <Text style={styles.logoutText}>Logout</Text>
+        {/* LOGOUT */}
+        <Pressable
+          style={[styles.logoutBtn, { backgroundColor: colors.elevated }]}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+          <Text style={[styles.logoutText, { color: colors.danger }]}>
+            Logout
+          </Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* ---------------- Components ---------------- */
+/* ---------- COMPONENTS ---------- */
 
 function Section({
   title,
   open,
   onToggle,
   children,
-  isDark,
-}: {
-  title: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  isDark: boolean;
-}) {
+  colors,
+}: any) {
   return (
     <View style={{ marginBottom: 16 }}>
       <Pressable style={styles.sectionHeader} onPress={onToggle}>
         <Text
-          style={[
-            styles.sectionTitle,
-            { color: isDark ? '#fff' : '#000' },
-          ]}
+          style={[styles.sectionTitle, { color: colors.textPrimary }]}
         >
           {title}
         </Text>
         <Ionicons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={20}
-          color="#999"
+          color={colors.textMuted}
         />
       </Pressable>
       {open && <View>{children}</View>}
@@ -253,27 +278,45 @@ function Section({
   );
 }
 
-function DummyRow({
-  title,
-  subtitle,
-  tag,
-}: {
-  title: string;
-  subtitle?: string;
-  tag?: string;
-}) {
+function DummyRow({ title, subtitle, tag, colors }: any) {
   return (
-    <View style={styles.row}>
+    <View
+      style={[styles.row, { backgroundColor: colors.card }]}
+    >
       <View>
-        <Text style={styles.rowTitle}>{title}</Text>
-        {subtitle && <Text style={styles.rowSub}>{subtitle}</Text>}
+        <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>
+          {title}
+        </Text>
+        {subtitle && (
+          <Text style={[styles.rowSub, { color: colors.textSecondary }]}>
+            {subtitle}
+          </Text>
+        )}
       </View>
-      {tag && <Text style={styles.tag}>{tag}</Text>}
+      {tag && (
+  <View
+    style={[
+      styles.tag,
+      { backgroundColor: colors.elevated },
+    ]}
+  >
+    <View style={styles.tagInner}>
+      <Text
+        style={[
+          styles.tagText,
+          { color: colors.textPrimary },
+        ]}
+      >
+        {tag}
+      </Text>
+    </View>
+  </View>
+)}
     </View>
   );
 }
 
-/* ---------------- Styles ---------------- */
+/* ---------- STYLES ---------- */
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
@@ -295,41 +338,53 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    backgroundColor: '#1f1f1f',
     borderRadius: 16,
     padding: 16,
   },
-  statValue: { fontSize: 22, fontWeight: '700', color: '#fff' },
-  statLabel: { color: '#aaa', marginTop: 4 },
+  statValue: { fontSize: 22, fontWeight: '700' },
+  statLabel: { marginTop: 4 },
 
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
+  sectionTitle: { fontSize: 20, fontWeight: '700' },
 
   row: {
-    backgroundColor: '#1f1f1f',
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  rowTitle: { color: '#fff', fontWeight: '600' },
-  rowSub: { color: '#aaa', marginTop: 2 },
+  rowTitle: { fontWeight: '600' },
+  rowSub: { marginTop: 2 },
+
   tag: {
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    fontSize: 12,
-  },
+  minHeight: 28,
+  minWidth: 72,
+  paddingHorizontal: 12,
+  borderRadius: 999,
+
+  justifyContent: 'center',
+  alignSelf: 'center',
+},
+
+tagInner: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+
+ tagText: {
+  fontSize: 12,
+  fontWeight: '600',
+  textAlign: 'center',
+},
+
+
 
   quickHeader: {
     flexDirection: 'row',
@@ -344,20 +399,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  /* 🔑 FIX: Animated wrapper owns width */
-  animatedCard: {
-    width: '48%',
-  },
+  animatedCard: { width: '48%' },
 
   actionCard: {
-    backgroundColor: '#1f1f1f',
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',
   },
   actionText: {
     marginTop: 8,
-    color: '#fff',
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -366,13 +416,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingVertical: 12,
     borderRadius: 14,
-    backgroundColor: '#fee2e2',
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
   },
-  logoutText: {
-    color: '#e11d48',
-    fontWeight: '700',
-  },
+  logoutText: { fontWeight: '700' },
 });

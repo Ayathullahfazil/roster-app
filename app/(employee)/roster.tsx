@@ -223,44 +223,44 @@ export default function EmployeeRosterScreen() {
             </View>
 
             <View style={styles.actionRow}>
-  {/* Time-Off / Transfer */}
-  <Pressable
-    style={[
-      styles.secondaryBtn,
-      { backgroundColor: colors.elevated },
-    ]}
-  >
-    <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
-      Time-Off / Transfer
-    </Text>
-  </Pressable>
+              {/* Time-Off / Transfer */}
+              <Pressable
+                style={[
+                  styles.secondaryBtn,
+                  { backgroundColor: colors.elevated },
+                ]}
+              >
+                <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                  Time-Off / Transfer
+                </Text>
+              </Pressable>
 
-  {/* Start Shift */}
-  <Pressable
-    style={[
-      styles.primaryBtn,
-      { backgroundColor: colors.primary },
-    ]}
-  >
-    <Text style={{ color: colors.textInverse, fontWeight: '700' }}>
-      Start Shift
-    </Text>
-  </Pressable>
+              {/* Start Shift */}
+              <Pressable
+                style={[
+                  styles.primaryBtn,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Text style={{ color: colors.textInverse, fontWeight: '700' }}>
+                  Start Shift
+                </Text>
+              </Pressable>
 
-  {/* Navigation icon */}
-  <Pressable
-    style={[
-      styles.iconBtn,
-      { backgroundColor: colors.primary },
-    ]}
-  >
-    <Ionicons
-      name="navigate-outline"
-      size={18}
-      color={colors.textInverse}
-    />
-  </Pressable>
-</View>
+              {/* Navigation icon */}
+              <Pressable
+                style={[
+                  styles.iconBtn,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Ionicons
+                  name="navigate-outline"
+                  size={18}
+                  color={colors.textInverse}
+                />
+              </Pressable>
+            </View>
 
 
           </Card>
@@ -283,25 +283,32 @@ export default function EmployeeRosterScreen() {
           </View>
 
           {[
-            'Mon · CBD Office Tower · Security Officer',
-            'Tue · City Retail Centre · Patrol Guard',
-            'Wed · City Retail Centre · Patrol Guard',
-            'Thu · Eastside Depot · Security Guard',
-            'Fri · West Mall · Supervisor',
-            'Fri · West Mall · Night Patrol',
-          ].map((item) => (
-            <Card key={item} colors={colors}>
-              <Text style={{ color: colors.textPrimary }}>
-               {item.replace(
-                 /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/,
-               (d) => d.toUpperCase()
-            )}
-          </Text>
+            'Mon ·   CBD Office Tower · Security Officer',
+            'Tue ·   City Retail Centre · Patrol Guard',
+            'Wed ·   City Retail Centre · Patrol Guard',
+            'Thu ·   Eastside Depot · Security Guard',
+            'Fri ·   West Mall · Supervisor',
+            'Fri ·   West Mall · Night Patrol',
+          ].map((item) => {
+            const parts = item.split(' · ');
+            const day = parts[0];
+            const rest = parts.slice(1).join(' · '); // ✅ keeps role
 
+            return (
+              <Card key={item} colors={colors}>
+                <Text style={{ color: colors.textPrimary }}>
+                  <Text style={{ fontWeight: '700' }}>
+                    {day.toUpperCase()}
+                  </Text>
+                  <Text style={{ fontWeight: '400' }}>
+                    {' · ' + rest}
+                  </Text>
+                </Text>
+              </Card>
+            );
+          })}
 
-            </Card>
-          ))}
-        </View>
+              </View>
 
         {/* ================= MONTHLY ================= */}
         <View onLayout={(e) => (monthlyY.current = e.nativeEvent.layout.y)}>
