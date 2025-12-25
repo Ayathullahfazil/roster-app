@@ -6,8 +6,8 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    useColorScheme,
     View,
+    useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,31 +16,27 @@ export default function EditEmployeeProfile() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  /* ================= Theme Tokens ================= */
+  /* ========= LOCKED EMPLOYEE THEME ========= */
   const colors = {
-    bg: isDark ? '#0b1220' : '#f5f7fb',
-    card: isDark ? '#1c2636' : '#ffffff',
-    border: isDark ? '#2a3447' : '#e5e7eb',
+    bgPrimary: '#121212',
+    bgCard: '#1f1f1f',
+    bgElevated: '#2a2a2a',
 
-    textPrimary: isDark ? '#ffffff' : '#111827',
-    textSecondary: isDark ? '#cbd5e1' : '#6b7280',
-    textMuted: isDark ? '#94a3b8' : '#9ca3af',
+    textPrimary: '#ffffff',
+    textSecondary: '#a1a1aa',
+    textMuted: '#6b7280',
 
     primary: '#2563eb',
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <ScrollView contentContainerStyle={styles.container}>
 
         {/* ================= Header ================= */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons
-              name="arrow-back"
-              size={22}
-              color={colors.primary}
-            />
+            <Ionicons name="arrow-back" size={22} color={colors.primary} />
           </Pressable>
 
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
@@ -50,8 +46,8 @@ export default function EditEmployeeProfile() {
           <View style={{ width: 40 }} />
         </View>
 
-        {/* ================= Editable Fields ================= */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        {/* ================= Editable Section ================= */}
+        <View style={[styles.card, { backgroundColor: colors.bgCard }]}>
           <Field
             label="Phone Number"
             value="(555) 123-4567"
@@ -79,7 +75,7 @@ export default function EditEmployeeProfile() {
           Account Info
         </Text>
 
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
+        <View style={[styles.card, { backgroundColor: colors.bgCard }]}>
           <ReadOnlyField
             label="Full Name"
             value="John Smith"
@@ -99,9 +95,10 @@ export default function EditEmployeeProfile() {
           />
         </View>
 
-        {/* ================= Save Button ================= */}
+        {/* ================= Save ================= */}
         <Pressable
           style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+          onPress={() => router.replace('/profile')}
         >
           <Text style={styles.saveText}>Save Changes</Text>
         </Pressable>
@@ -125,12 +122,7 @@ function Field({
   value,
   icon,
   colors,
-}: {
-  label: string;
-  value: string;
-  icon: any;
-  colors: any;
-}) {
+}: any) {
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.textSecondary }]}>
@@ -140,22 +132,14 @@ function Field({
       <View
         style={[
           styles.inputRow,
-          {
-            borderColor: colors.border,
-            backgroundColor: colors.card,
-          },
+          { backgroundColor: colors.bgElevated },
         ]}
       >
         <TextInput
           defaultValue={value}
           style={[styles.input, { color: colors.textPrimary }]}
         />
-
-        <Ionicons
-          name={icon}
-          size={18}
-          color={colors.textMuted}
-        />
+        <Ionicons name={icon} size={18} color={colors.textMuted} />
       </View>
     </View>
   );
@@ -165,11 +149,7 @@ function ReadOnlyField({
   label,
   value,
   colors,
-}: {
-  label: string;
-  value: string;
-  colors: any;
-}) {
+}: any) {
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.textSecondary }]}>
@@ -179,17 +159,10 @@ function ReadOnlyField({
       <View
         style={[
           styles.inputRow,
-          {
-            borderColor: colors.border,
-            backgroundColor: colors.bg,
-            opacity: 0.8,
-          },
+          { backgroundColor: colors.bgElevated, opacity: 0.7 },
         ]}
       >
-        <Text style={{ color: colors.textMuted }}>
-          {value}
-        </Text>
-
+        <Text style={{ color: colors.textMuted }}>{value}</Text>
         <Ionicons
           name="lock-closed-outline"
           size={18}
@@ -203,8 +176,6 @@ function ReadOnlyField({
 /* ================= Styles ================= */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-
   container: {
     padding: 16,
     paddingBottom: 40,
@@ -249,7 +220,6 @@ const styles = StyleSheet.create({
   },
 
   inputRow: {
-    borderWidth: 1,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
